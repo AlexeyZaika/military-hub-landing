@@ -69,41 +69,6 @@
     let _slideToggle = (target, duration = 500) => {
         if (target.hidden) return _slideDown(target, duration); else return _slideUp(target, duration);
     };
-    let bodyLockStatus = true;
-    let bodyLockToggle = (delay = 500) => {
-        if (document.documentElement.classList.contains("lock")) bodyUnlock(delay); else bodyLock(delay);
-    };
-    let bodyUnlock = (delay = 500) => {
-        if (bodyLockStatus) {
-            const lockPaddingElements = document.querySelectorAll("[data-lp]");
-            setTimeout((() => {
-                lockPaddingElements.forEach((lockPaddingElement => {
-                    lockPaddingElement.style.paddingRight = "";
-                }));
-                document.body.style.paddingRight = "";
-                document.documentElement.classList.remove("lock");
-            }), delay);
-            bodyLockStatus = false;
-            setTimeout((function() {
-                bodyLockStatus = true;
-            }), delay);
-        }
-    };
-    let bodyLock = (delay = 500) => {
-        if (bodyLockStatus) {
-            const lockPaddingElements = document.querySelectorAll("[data-lp]");
-            const lockPaddingValue = window.innerWidth - document.body.offsetWidth + "px";
-            lockPaddingElements.forEach((lockPaddingElement => {
-                lockPaddingElement.style.paddingRight = lockPaddingValue;
-            }));
-            document.body.style.paddingRight = lockPaddingValue;
-            document.documentElement.classList.add("lock");
-            bodyLockStatus = false;
-            setTimeout((function() {
-                bodyLockStatus = true;
-            }), delay);
-        }
-    };
     function spollers() {
         const spollersArray = document.querySelectorAll("[data-spollers]");
         if (spollersArray.length > 0) {
@@ -245,18 +210,6 @@
                 }));
             }
         }
-    }
-    function menuInit() {
-        if (document.querySelector(".header__button-menu")) document.addEventListener("click", (function(e) {
-            if (bodyLockStatus && e.target.closest(".header__button-menu")) {
-                bodyLockToggle();
-                document.documentElement.classList.toggle("menu-open");
-            }
-        }));
-    }
-    function functions_menuClose() {
-        bodyUnlock();
-        document.documentElement.classList.remove("menu-open");
     }
     function uniqArray(array) {
         return array.filter((function(item, index, self) {
@@ -4338,6 +4291,20 @@
     }
     const da = new DynamicAdapt("max");
     da.init();
+    const menuButton = document.querySelector(".header__button-menu");
+    const menuBody = document.querySelector(".header__menu");
+    const menuLinks = document.querySelectorAll(".header__menu-link");
+    if (menuLinks.length) for (const menuLink of menuLinks) menuLink.addEventListener("click", (() => {
+        menuBody.classList.remove("active");
+    }));
+    if (menuButton) menuButton.addEventListener("click", (() => {
+        menuBody.classList.toggle("active");
+    }));
+    const headerMenu = document.querySelector(".header__bottom");
+    if (headerMenu) window.addEventListener("scroll", (() => {
+        const scrollTo = document.querySelector(".header__slider").getBoundingClientRect().height;
+        if (scrollTo <= window.scrollY + 100) headerMenu.classList.add("fixed"); else headerMenu.classList.remove("fixed");
+    }));
     const script_headerSlider = document.querySelector(".header__slider");
     function initializeSliderBg() {
         const headerSlides = script_headerSlider.querySelectorAll(".header__slide");
@@ -4412,16 +4379,11 @@
         stopVideo();
         if (window.innerWidth < 768) setPositionLineName();
     }));
-    const menuLinks = document.querySelectorAll(".header__menu-link");
-    if (menuLinks.length) for (const menuLink of menuLinks) menuLink.addEventListener("click", (() => {
-        functions_menuClose();
-    }));
     const productSliders = document.querySelectorAll(".catalog__product");
     if (productSliders.length) for (const productSlider of productSliders) {
         const slides = productSlider.querySelectorAll(".catalog__product-slide");
         const pagination = productSlider.querySelector(".catalog__product-pagination");
         if (slides.length === 1) pagination.classList.add("hide");
     }
-    menuInit();
     spollers();
 })();
